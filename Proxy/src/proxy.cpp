@@ -81,7 +81,7 @@ void ed_fm_set_plugin_data_install_path( const char* path )
     ToLog( "=====================================================\n" );
     ToLog( "==             DCS EMF PROXY ERRROR                ==\n" );
     ToLog( "=====================================================\n" );
-    ToLog( "======  Have existing real EFM for cold start  ======\n" );
+    ToLog( "=====  Already have existing real EFM loaded   ======\n" );
     ToLog( "=====================================================\n" );
 
     delete pEFM;
@@ -92,15 +92,17 @@ void ed_fm_set_plugin_data_install_path( const char* path )
   pEFM = new EFM();
   if( pEFM->Load( strFilePathOfProxy ) == false )
   {
-    ToLog( "======  ERROR     Real EFM via cold start        ====\n" );
+    ToLog( "======  ERROR  Failed create/load the real EFM  ====\n" );
     ::DebugBreak();
   }
   else
   {
     ToLog( "=====================================================\n" );
-    ToLog( "====       Loaded Real EFM via cold start        ====\n" );
+    ToLog( "====                Loaded Real EFM              ====\n" );
     ToLog( " The Install Path : %s\n", path );
     pEFM->set_plugin_data_install_path( path );
+
+
   }
 }
 

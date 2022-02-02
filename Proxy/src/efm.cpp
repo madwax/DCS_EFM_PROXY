@@ -103,9 +103,20 @@ bool EFM::Load( const char* proxyEFMFilePath )
   this->m_hEFM = ::LoadLibraryA( toLoadDll );
   if( this->m_hEFM == NULL )
   {
-    ToLog( "Failed to load the real EFM dll from : %s\n", toLoadDll );
+    const DWORD lastError = ::GetLastError();
+ 
+    ToLog("=======================================================\n");
+    ToLog("===== BAD BAD BAD BAD BAD BAD BAD BAD BAD BAD BAD =====\n");
+    ToLog("=======================================================\n");
+    ToLog("===== Failed to load real EFM dll path: %s\n");
+    ToLog("===== Win32 Error: %lu\n", lastError);
+    ToLog("=======================================================\n");
     return false;
   }
+
+  ToLog("=======================================================\n");
+  ToLog("===== Loaded real EFM dll from path: %s\n");
+  ToLog("=======================================================\n");
 
   this->m_add_local_force = ( PFN_FORCE_SOURCE )this->GetProc( "ed_fm_add_local_force" );
   this->m_add_global_force = ( PFN_FORCE_SOURCE )this->GetProc( "ed_fm_add_global_force" );
@@ -142,7 +153,7 @@ bool EFM::Load( const char* proxyEFMFilePath )
   this->m_make_balance = ( PFN_MAKE_BALANCE )this->GetProc( "ed_fm_make_balance" );
   this->m_enable_debug_info = ( PFN_ENABLE_DEBUG_INFO )this->GetProc( "ed_fm_enable_debug_info" );
   this->m_debug_watch = ( PFN_DEBUG_WATCH )this->GetProc( "ed_fm_debug_watch" );
-  this->m_set_plugin_data_install_path = ( PFN_SET_PLUGIN_DATA_INSTALL_PATH )this->GetProc( "ed_fm_set_plugin_data_install_pat" );
+  this->m_set_plugin_data_install_path = ( PFN_SET_PLUGIN_DATA_INSTALL_PATH )this->GetProc( "ed_fm_set_plugin_data_install_path" );
   this->m_on_planned_failure = ( PFN_ON_PLANNED_FAILURE )this->GetProc( "ed_fm_on_planned_failure" );
   this->m_on_damage = ( PFN_ON_DAMAGE )this->GetProc( "ed_fm_on_damage" );
   this->m_repair = ( PFN_REPAIR )this->GetProc( "ed_fm_repair" );
