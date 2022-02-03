@@ -264,9 +264,19 @@ void ed_fm_set_draw_args( EdDrawArgument* array, size_t size )
   Get()->set_draw_args( array, size );
 }
 
+void ed_fm_set_draw_args_v2( float* array, size_t size )
+{
+  Get()->set_draw_args_v2( array, size );
+}
+
 void ed_fm_set_fc3_cockpit_draw_args( EdDrawArgument* array, size_t size )
 {
   Get()->set_fc3_cockpit_draw_args( array, size );
+}
+
+void ed_fm_set_fc3_cockpit_draw_args_v2( float* array, size_t size )
+{
+  Get()->set_fc3_cockpit_draw_args_v2( array, size );
 }
 
 double ed_fm_get_shake_amplitude()

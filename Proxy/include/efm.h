@@ -38,7 +38,9 @@ class EFM
   PFN_GET_EXTERNAL_FUEL m_get_external_fuel;
   PFN_REFUELING_ADD_FUEL m_refueling_add_fuel;
   PFN_SET_DRAW_ARGS m_set_draw_args;
+  PFN_SET_DRAW_ARGS_V2 m_set_draw_args_v2;
   PFN_SET_DRAW_ARGS m_set_fc3_cockpit_draw_args;
+  PFN_SET_DRAW_ARGS_V2 m_set_fc3_cockpit_draw_args_v2;
   PFN_GET_SHAKE_AMPLITUDE m_get_shake_amplitude;
   PFN_CONFIGURE m_configure;
   PFN_FM_RELEASE m_release;
@@ -98,7 +100,9 @@ public:
   double get_external_fuel();
   void refueling_add_fuel( double fuel );
   void set_draw_args( EdDrawArgument* array, size_t size );
+  void set_draw_args_v2( float* array, size_t size );
   void set_fc3_cockpit_draw_args( EdDrawArgument* array, size_t size );
+  void set_fc3_cockpit_draw_args_v2( float* array, size_t size );
   double get_shake_amplitude();
   void configure( const char* cfg_path );
   // target

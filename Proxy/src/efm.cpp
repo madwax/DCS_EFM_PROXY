@@ -142,7 +142,9 @@ bool EFM::Load( const char* proxyEFMFilePath )
   this->m_get_external_fuel = ( PFN_GET_EXTERNAL_FUEL )this->GetProc( "ed_fm_get_external_fuel" );
   this->m_refueling_add_fuel = ( PFN_REFUELING_ADD_FUEL )this->GetProc( "ed_fm_refueling_add_fuel" );
   this->m_set_draw_args = ( PFN_SET_DRAW_ARGS )this->GetProc( "ed_fm_set_draw_args" );
+  this->m_set_draw_args_v2 = ( PFN_SET_DRAW_ARGS_V2 )this->GetProc( "ed_fm_set_draw_args_v2" );
   this->m_set_fc3_cockpit_draw_args = ( PFN_SET_DRAW_ARGS )this->GetProc( "ed_fm_set_fc3_cockpit_draw_args" );
+  this->m_set_fc3_cockpit_draw_args_v2 = ( PFN_SET_DRAW_ARGS_V2 )this->GetProc( "ed_fm_set_fc3_cockpit_draw_args_v2" );
   this->m_get_shake_amplitude = ( PFN_GET_SHAKE_AMPLITUDE )this->GetProc( "ed_fm_get_shake_amplitude" );
   this->m_configure = ( PFN_CONFIGURE )this->GetProc( "ed_fm_configure" );
   this->m_release = ( PFN_FM_RELEASE )this->GetProc( "ed_fm_release" );
@@ -370,11 +372,27 @@ void EFM::set_draw_args( EdDrawArgument* array, size_t size )
   }
 }
 
+void EFM::set_draw_args_v2( float* array, size_t size )
+{
+  if( this->m_set_draw_args_v2 != NULL )
+  {
+    ( *( this->m_set_draw_args_v2 ) )( array, size );
+  }
+}
+
 void EFM::set_fc3_cockpit_draw_args( EdDrawArgument* array, size_t size )
 {
   if( this->m_set_fc3_cockpit_draw_args != NULL )
   {
     ( *( this->m_set_fc3_cockpit_draw_args ) )( array, size );
+  }
+}
+
+void EFM::set_fc3_cockpit_draw_args_v2( float* array, size_t size )
+{
+  if( this->m_set_fc3_cockpit_draw_args_v2 != NULL )
+  {
+    ( *( this->m_set_fc3_cockpit_draw_args_v2 ) )( array, size );
   }
 }
 
