@@ -1,39 +1,55 @@
 ################################################################################
 # Hot loading of DLLs for DCS EFM
 # 
-# The structure is simple
-# There are 2 projects
-# The Proxy - This is loaded by DCS in your mod.  This will load The Target everytime you start a new FM session.
-# The Target - Your real FM.  
+# The Proxy EFM DLL
 #
-cmake_minimum_required( VERSION 3.15.0 )
+cmake_minimum_required( VERSION 3.18.0 )
 
-project( MOD_EFM )
+project( efm_proxy )
 
-# Were are the EFM and ProxyEFM going.
-set( MOD_BIN_PATH "../bin" CACHE STRING "The location of your mod's bin directory" )
-# The name of the dll
-set( MOD_BIN_FILENAME "" CACHE STRING "The name of the EFM DLL" )
-# If we are to build the EFM or Proxy + EFM
-option( MOD_USE_PROXY "If we should build with Proxy support" OFF )
-# Workout the true path were the dll's will go
-get_filename_component( ABSOLUTE_MOD_BIN_PATH ${MOD_BIN_PATH} ABSOLUTE)
-# We want to go after DCS own headers
-set( DCS_LOCATION "" CACHE STRING "Please enter the root of your DCS install" )
+include( ./dcs.cmake )
 
-# We want to use DCS's header files as there kept up todate.
-# As the library is only header-only tell cmake is an interface lib
-add_library( DCS INTERFACE )
-target_include_directories( DCS INTERFACE "${DCS_LOCATION}/API/include" )
+# If we have included this file then we want proxy support so force it
+unset( USER_MOD_PROXY_SUPPORT CACHE )
+set( USER_MOD_PROXY_SUPPORT ON CACHE BOOL "Forced Proxy as its cmake project is included" FORCE )
+message( NOTICE "Forceing using EFM Proxy as the CMake Project file as included" )
 
-message( "Everything is going to: ${ABSOLUTE_MOD_BIN_PATH}" )
+# global section 	
+set( SRC "${PROJECT_SOURCE_DIR}/src" )
+set( INC "${PROJECT_SOURCE_DIR}/include" )
 
-# See Proxy_EFM.ReadMe.txt about this!
-# This is your EFM ;)
-# add_subdirectory( ./FlightModel )
+# The proxy 
+add_library( efm_proxy SHARED )
 
-# This is the proxy EFM
-add_subdirectory( ./Proxy )
+# C++17 
+target_compile_features( efm_proxy PUBLIC cxx_std_17 )
 
+target_compile_definitions( efm_proxy PUBLIC
+	FM_EXPORTS=1
+)
 
+target_include_directories( efm_proxy PUBLIC
+	"${SRC}"
+	"${INC}" 
+)
 
+target_sources( efm_proxy PRIVATE 
+	${INC}/common.h
+	${INC}/os.h
+	${SRC}/log.cpp
+	${INC}/loader.h
+	${SRC}/loader.cpp
+	${INC}/efm.h
+	${SRC}/efm.cpp
+	${INC}/proxy.h
+	${SRC}/proxy.cpp
+
+	${SRC}/dllmain.cpp
+)
+
+# Defines the name of the dll
+dcs_set_as_efm_proxy( efm_proxy )
+# Puts this into the mod dir when built
+dcs_set_output_bin( efm_proxy )
+
+target_link_libraries( efm_proxy PRIVATE DCS )

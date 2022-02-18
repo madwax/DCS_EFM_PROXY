@@ -5,14 +5,24 @@
 #ifndef __EFM_PROXY_EFM_H__
 #define __EFM_PROXY_EFM_H__
 
-#include "common.h"
+#include <loader.h>
 
-#define MAX_PROXY_FILEPATH 1024
+#define EXPORT_ED_FM_PHYSICS_IMP extern "C" __declspec(dllexport)
+
+/// Now for DCS headers.  These are the ones shipped with your install copy.  See the API folder!
+#include "FM/wHumanCustomPhysicsAPI_ImplementationDeclare.h"
+
+#include <map>
+
+namespace Proxy
+{
 
 class EFM
 {
-  HMODULE m_hEFM;
-  // The pointers
+  // The loader
+  Proxy::Loader m_theLoader;
+
+  // The function pointers
   //@{
   PFN_FORCE_SOURCE m_add_local_force;
   PFN_FORCE_SOURCE m_add_global_force;
@@ -37,8 +47,12 @@ class EFM
   PFN_SET_EXTERNAL_FUEL m_set_external_fuel;
   PFN_GET_EXTERNAL_FUEL m_get_external_fuel;
   PFN_REFUELING_ADD_FUEL m_refueling_add_fuel;
+
+  PFN_SET_DRAW_ARGS_V2 m_set_draw_args_v2;
+  PFN_SET_DRAW_ARGS_V2 m_set_fc3_cockpit_draw_args_v2;
   PFN_SET_DRAW_ARGS m_set_draw_args;
   PFN_SET_DRAW_ARGS m_set_fc3_cockpit_draw_args;
+  
   PFN_GET_SHAKE_AMPLITUDE m_get_shake_amplitude;
   PFN_CONFIGURE m_configure;
   PFN_FM_RELEASE m_release;
@@ -65,14 +79,34 @@ class EFM
   PFN_FM_LERX_VORTEX_UPDATE m_LERX_vortex_update;
   //@}
 
-  FARPROC GetProc( const char* name ); 
+  // Clears function pointers and does anything 
+  // that might effect the next load.
+  void Reset();
+  // Does the work of loading all the exports from the 
+  bool LoadExports();
+
+  // Returns the filepath of the ini file used to control the proxy
+  std::filesystem::path ConfigFilepath() const;
+
+  // Gets the filepath of the dll we are proxing
+  // Used to see if the user wants to override the default name
+  std::filesystem::path TargetDLL();
+
+  // Does your load and sets everything up
+  bool Load( const std::filesystem::path& filepath );
 
 public:
   EFM();
   ~EFM();
 
-  bool Load( const char* proxyEFMFilePath );
+  bool Load();
 
+  // The proxies
+  //{@
+  void release();
+  void cold_start();
+  void hot_start();
+  void hot_start_in_air();
 
   void add_local_force( double& x, double& y, double& z, double& pos_x, double& pos_y, double& pos_z );
   void add_global_force( double& x, double& y, double& z, double& pos_x, double& pos_y, double& pos_z );
@@ -97,18 +131,16 @@ public:
   void set_external_fuel( int station, double fuel, double x, double y, double z );
   double get_external_fuel();
   void refueling_add_fuel( double fuel );
+
+  void set_draw_args_v2( float* array, size_t size );
+  void set_fc3_cockpit_draw_args_v2( float* array, size_t size );
+
   void set_draw_args( EdDrawArgument* array, size_t size );
   void set_fc3_cockpit_draw_args( EdDrawArgument* array, size_t size );
+
   double get_shake_amplitude();
   void configure( const char* cfg_path );
-  // target
-  void release();
   double get_param( unsigned param_enum );
-  // targets! >>>
-  void cold_start();
-  void hot_start();
-  void hot_start_in_air();
-  // targets! <<<
   bool make_balance( double& ax, double& ay, double& az, double& vx, double& vy, double& vz, double& omegadotx, double& omegadoty, double& omegadotz, double& omegax, double& omegay, double& omegaz, double& yaw, double& pitch, double& roll );//radians
   bool enable_debug_info();
   size_t debug_watch( int level, char* buffer, size_t maxlen );
@@ -126,7 +158,10 @@ public:
   bool push_simulation_event( const ed_fm_simulation_event& in );
   void suspension_feedback( int idx, const ed_fm_suspension_info* info );
   bool LERX_vortex_update( unsigned idx, LERX_vortex& out );
+  //@}
 };
+
+}
 
 
 #endif /* __EFM_PROXY_EFM_H__ */
