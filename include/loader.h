@@ -41,6 +41,9 @@ public:
   // Loads the DLL. 
   bool Load( const std::filesystem::path& filepath );
 
+  // Unload the DLL
+  void Unload();
+
   // Get an export function
   FARPROC GetProc( const char* exportName ) const;
 };

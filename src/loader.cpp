@@ -48,6 +48,16 @@ bool Loader::Load( const std::filesystem::path& filepath )
 }
 
 
+void Loader::Unload()
+{
+  if( this->m_hDLL != nullptr )
+  {
+    ::FreeLibrary( this->m_hDLL );
+    this->m_hDLL = nullptr;
+  }
+}
+
+
 FARPROC Loader::GetProc( const char* exportName ) const
 {
   if( this->m_hDLL == nullptr || exportName == nullptr )
