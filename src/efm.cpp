@@ -655,6 +655,7 @@ void EFM::release()
   {
     ( *( this->m_release ) )( );
   }
+  this->m_theLoader.Unload();
 }
 
 
@@ -682,31 +683,6 @@ void EFM::hot_start_in_air()
   {
     ( *( this->m_hot_start_in_air ) )( );
   }
-}
-
-
-switch( value )
-{
-  case 1:
-  {
-  
-  } break;
-
-  case 2:
-  {
-  
-  } break;
-
-  case 3:
-  {
-    return;
-  }
-
-  case 4:
-  default:
-  {
-  } break;
-
 }
 
 
