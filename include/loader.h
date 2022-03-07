@@ -17,8 +17,8 @@ namespace Proxy
 // Super-simple dll loader and exports grabber
 class Loader
 {
-  static HMODULE s_hModule;
-  static std::filesystem::path s_moduleFilepath;
+  const HMODULE m_hModule;
+  const std::filesystem::path m_moduleFilepath;
 
   HMODULE m_hDLL = nullptr;
 
@@ -28,15 +28,17 @@ class Loader
 public:
   // Call this on process attach in DLL main
   static void Set( HMODULE hModule );
-  static const std::filesystem::path& ModuleFilepath();
   
-  Loader();
+  Loader( HMODULE hModule );
+  Loader() = delete;
   Loader( const Loader& ) = delete;
   Loader( Loader&& ) = delete;
   virtual ~Loader();
 
   void operator = ( const Loader& ) = delete;
   void operator = ( Loader&& ) = delete;
+
+  const std::filesystem::path& ModuleFilepath() const;
 
   // Loads the DLL. 
   bool Load( const std::filesystem::path& filepath );

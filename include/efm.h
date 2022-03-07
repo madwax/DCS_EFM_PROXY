@@ -5,7 +5,9 @@
 #ifndef __EFM_PROXY_EFM_H__
 #define __EFM_PROXY_EFM_H__
 
-#include <loader.h>
+#include "loader.h"
+#include "config.h"
+
 
 #define EXPORT_ED_FM_PHYSICS_IMP extern "C" __declspec(dllexport)
 
@@ -20,7 +22,8 @@ namespace Proxy
 class EFM
 {
   // The loader
-  Proxy::Loader m_theLoader;
+  Proxy::Loader& m_theLoader;
+  Proxy::Config& m_theConfig;
 
   // The function pointers
   //@{
@@ -85,18 +88,12 @@ class EFM
   // Does the work of loading all the exports from the 
   bool LoadExports();
 
-  // Returns the filepath of the ini file used to control the proxy
-  std::filesystem::path ConfigFilepath() const;
-
-  // Gets the filepath of the dll we are proxing
-  // Used to see if the user wants to override the default name
-  std::filesystem::path TargetDLL();
-
   // Does your load and sets everything up
   bool Load( const std::filesystem::path& filepath );
 
 public:
-  EFM();
+  EFM() = delete;
+  EFM( Proxy::Loader& theLoader, Proxy::Config& theConfig );
   ~EFM();
 
   bool Load();

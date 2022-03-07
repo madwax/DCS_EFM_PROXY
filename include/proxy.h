@@ -5,7 +5,7 @@
 #ifndef __EFM_PROXY_PROXY_H__
 #define __EFM_PROXY_PROXY_H__
 
-#include "common.h"
+
 #include "efm.h"
 
 #endif /* __EFM_PROXY_PROXY_H__ */
