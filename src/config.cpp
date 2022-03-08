@@ -108,7 +108,7 @@ Config::ConsoleLoggingModes Config::LogConsoleMode() const
 
   if( wcscmp( valueBuffer, L"err" ) == 0 || wcscmp( valueBuffer, L"Err" ) == 0 || wcscmp( valueBuffer, L"ERR" ) == 0 )
   {
-    return Config::ConsoleLoggingModes::StdOut;
+    return Config::ConsoleLoggingModes::StdErr;
   }
 
   return Config::ConsoleLoggingModes::Both;  

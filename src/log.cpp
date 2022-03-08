@@ -69,6 +69,7 @@ Log::~Log()
 
 void Log::ReleaseConsoleWindow()
 {
+
   if( this->m_consoleWindowAlloced )
   {
     if( this->m_hConsoleStdOutRedirect != nullptr )
@@ -84,6 +85,8 @@ void Log::ReleaseConsoleWindow()
     }
 
     ::FreeConsole();
+
+    m_consoleWindowAlloced = false;
   }
 }
 
@@ -104,6 +107,7 @@ void Log::ConfigureConsole()
 
         if( stdOut )
         {
+          ::OutputDebugStringA( "==== stdout" );
           this->m_hConsoleStdOutRedirect = freopen("CONOUT$", "w", stdout);
         }
         if( stdErr )
@@ -130,8 +134,7 @@ void Log::ConfigureConsole()
 
       if( m_consoleWindowAlloced )
       {
-        ::FreeConsole();
-        m_consoleWindowAlloced = false;
+        this->ReleaseConsoleWindow();
       }
       else
       {
@@ -148,8 +151,8 @@ void Log::Configure()
   // config the console stuff
   this->ConfigureConsole();
 
-  this->StdOut( "Done configure stdout\n" );
-  this->StdErr( "Done configure stderr\n" );
+  this->StdOut( "Testing configure stdout\n" );
+  this->StdErr( "Testing configure stderr\n" );
 }
 
 
@@ -183,7 +186,7 @@ void Log::StdErr( const char* strMessage, ... )
 {
   va_list args;
   va_start( args, strMessage );
-  this->StdOut( strMessage, args );
+  this->StdErrArg( strMessage, args );
   va_end( args );
 }
 
