@@ -25,12 +25,24 @@ class Log
   // if we do the console window
   bool m_consoleEnabled = false;
   
+  // Runtime Console support
+  //@{
+  bool m_consoleWindowAlloced = false;
+  FILE* m_hConsoleStdOutRedirect = nullptr;
+  FILE* m_hConsoleStdErrRedirect = nullptr;
+  
+  Config::ConsoleLoggingModes m_consoleMode = Config::ConsoleLoggingModes::Both;
 
+  //@}
+  void CreateConsoleWindow();
+  void ReleaseConsoleWindow();
+
+  void ConfigureConsole();
 
 
 public:
   Log( const Config& theConfig );
-  ~Log() = default;
+  ~Log();
 
   // read the config object and do what is need
   void Configure();
