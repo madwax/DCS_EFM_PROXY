@@ -5,24 +5,21 @@
 #include <memory>
 
 
-namespace 
-{
-
-std::unique_ptr< Proxy::EFM > s_efmProxy;
-
-}
-
 void ed_fm_set_plugin_data_install_path( const char* path )
 {
-  if( s_efmProxy )
+  if( Proxy::s_theEFMProxy )
   {
     Proxy::ToLog( "EMF Proxy : ed_fm_set_plugin_data_install_path() called but we have an exiting proxy loaded, unloading... Please report\n" );
-    s_efmProxy.reset();
+    Proxy::s_theEFMProxy.reset();
   }
 
   try
   {
-    std::unique_ptr< Proxy::EFM > loading = std::make_unique< Proxy::EFM >();
+    Proxy::ToLog( "EMF Proxy : Creating Proxy EFM" );
+
+    std::unique_ptr< Proxy::EFM > loading = std::make_unique< Proxy::EFM >( *Proxy::s_theLoader, *Proxy::s_theConfig );
+
+    Proxy::ToLog( "EMF Proxy : loading your EFM" );
 
     if( loading->Load() == false )
     {
@@ -30,11 +27,16 @@ void ed_fm_set_plugin_data_install_path( const char* path )
       return;
     }
 
-    s_efmProxy  = std::move( loading );
+    Proxy::ToLog( "EMF Proxy : loaded your EFM" );
+
+    // reconfigure the logging layer
+    Proxy::s_theLogger->Configure();
+
+    Proxy::s_theEFMProxy  = std::move( loading );
 
     Proxy::ToLog( "EMF Proxy : Loaded EFM" );
 
-    s_efmProxy->set_plugin_data_install_path( path );
+    Proxy::s_theEFMProxy->set_plugin_data_install_path( path );
   }
   catch( const std::exception& ex )
   {
@@ -51,7 +53,7 @@ void ed_fm_set_plugin_data_install_path( const char* path )
 
 void ed_fm_release()
 {
-  if( !s_efmProxy )
+  if( !Proxy::s_theEFMProxy )
   {
     Proxy::ToLog( "EMF Proxy : ed_fm_release() called but we don't have a EFM loaded" );
     return;
@@ -59,7 +61,7 @@ void ed_fm_release()
 
   try
   {
-    s_efmProxy->release();
+    Proxy::s_theEFMProxy->release();
   }
   catch( const std::exception& ex )
   {
@@ -72,7 +74,7 @@ void ed_fm_release()
     return;
   }
 
-  s_efmProxy.reset( nullptr );
+  Proxy::s_theEFMProxy.reset( nullptr );
 }
 
 
@@ -80,7 +82,7 @@ void ed_fm_cold_start()
 {
   try
   {
-    s_efmProxy->cold_start();
+    Proxy::s_theEFMProxy->cold_start();
   }
   catch( const std::exception& ex )
   {
@@ -97,7 +99,7 @@ void ed_fm_hot_start()
 {
   try
   {
-    s_efmProxy->hot_start();
+    Proxy::s_theEFMProxy->hot_start();
   }
   catch( const std::exception& ex )
   {
@@ -114,7 +116,7 @@ void ed_fm_hot_start_in_air()
 {
   try
   {
-    s_efmProxy->hot_start_in_air();
+    Proxy::s_theEFMProxy->hot_start_in_air();
   }
   catch( const std::exception& ex )
   {
@@ -131,7 +133,7 @@ void ed_fm_add_local_force( double& x, double& y, double& z, double& pos_x, doub
 {
   try
   {
-    s_efmProxy->add_local_force( x, y, z, pos_x, pos_y, pos_z );
+    Proxy::s_theEFMProxy->add_local_force( x, y, z, pos_x, pos_y, pos_z );
   }
   catch( const std::exception& ex )
   {
@@ -148,7 +150,7 @@ void ed_fm_add_global_force( double& x, double& y, double& z, double& pos_x, dou
 {
   try
   {
-    s_efmProxy->add_global_force( x, y, z, pos_x, pos_y, pos_z );
+    Proxy::s_theEFMProxy->add_global_force( x, y, z, pos_x, pos_y, pos_z );
   }
   catch( const std::exception& ex )
   {
@@ -165,7 +167,7 @@ bool ed_fm_add_local_force_component( double& x, double& y, double& z, double& p
 {
   try
   {
-    bool ret = s_efmProxy->add_local_force_component( x, y, z, pos_x, pos_y, pos_z );
+    bool ret = Proxy::s_theEFMProxy->add_local_force_component( x, y, z, pos_x, pos_y, pos_z );
     return ret;
   }
   catch( const std::exception& ex )
@@ -184,7 +186,7 @@ bool ed_fm_add_global_force_component( double& x, double& y, double& z, double& 
 {
   try
   {
-    bool ret = s_efmProxy->add_global_force_component( x, y, z, pos_x, pos_y, pos_z );
+    bool ret = Proxy::s_theEFMProxy->add_global_force_component( x, y, z, pos_x, pos_y, pos_z );
     return ret;
   }
   catch( const std::exception& ex )
@@ -203,7 +205,7 @@ void ed_fm_add_local_moment( double& x, double& y, double& z )
 {
   try
   {
-    s_efmProxy->add_local_moment( x, y, z );
+    Proxy::s_theEFMProxy->add_local_moment( x, y, z );
   }
   catch( const std::exception& ex )
   {
@@ -220,7 +222,7 @@ void ed_fm_add_global_moment( double& x, double& y, double& z )
 {
   try
   {
-    s_efmProxy->add_global_moment( x, y, z );
+    Proxy::s_theEFMProxy->add_global_moment( x, y, z );
   }
   catch( const std::exception& ex )
   {
@@ -237,7 +239,7 @@ bool ed_fm_add_local_moment_component( double& x, double& y, double& z )
 {
   try
   {
-    bool ret = s_efmProxy->add_local_moment_component( x, y, z );
+    bool ret = Proxy::s_theEFMProxy->add_local_moment_component( x, y, z );
     return ret;
   }
   catch( const std::exception& ex )
@@ -256,7 +258,7 @@ bool ed_fm_add_global_moment_component( double& x, double& y, double& z )
 {
   try
   {
-    bool ret = s_efmProxy->add_global_moment_component( x, y, z );
+    bool ret = Proxy::s_theEFMProxy->add_global_moment_component( x, y, z );
 
     return ret;
   }
@@ -276,7 +278,7 @@ void ed_fm_simulate( double dt )
 {
   try
   {
-    s_efmProxy->simulate( dt );
+    Proxy::s_theEFMProxy->simulate( dt );
   }
   catch( const std::exception& ex )
   {
@@ -293,7 +295,7 @@ void ed_fm_set_surface( double h, double h_obj, unsigned surface_type, double no
 {
   try
   {
-    s_efmProxy->set_surface( h, h_obj, surface_type, normal_x, normal_y, normal_z );
+    Proxy::s_theEFMProxy->set_surface( h, h_obj, surface_type, normal_x, normal_y, normal_z );
   }
   catch( const std::exception& ex )
   {
@@ -310,7 +312,7 @@ void ed_fm_set_atmosphere( double h, double t, double a, double ro, double p, do
 {
   try
   {
-    s_efmProxy->set_atmosphere( h, t, a, ro, p, wind_vx, wind_vy, wind_vz );
+    Proxy::s_theEFMProxy->set_atmosphere( h, t, a, ro, p, wind_vx, wind_vy, wind_vz );
   }
   catch( const std::exception& ex )
   {
@@ -327,7 +329,7 @@ void ed_fm_wind_vector_field_update_request( wind_vector_field& in_out )
 {
   try
   {
-    s_efmProxy->wind_vector_field_update_request( in_out );
+    Proxy::s_theEFMProxy->wind_vector_field_update_request( in_out );
   }
   catch( const std::exception& ex )
   {
@@ -344,7 +346,7 @@ void ed_fm_wind_vector_field_done()
 {
   try
   {
-    s_efmProxy->wind_vector_field_done();
+    Proxy::s_theEFMProxy->wind_vector_field_done();
   }
   catch( const std::exception& ex )
   {
@@ -361,7 +363,7 @@ void ed_fm_set_current_mass_state( double mass, double center_of_mass_x, double 
 {
   try
   {
-    s_efmProxy->set_current_mass_state( mass, center_of_mass_x, center_of_mass_y, center_of_mass_z, moment_of_inertia_x, moment_of_inertia_y, moment_of_inertia_z );
+    Proxy::s_theEFMProxy->set_current_mass_state( mass, center_of_mass_x, center_of_mass_y, center_of_mass_z, moment_of_inertia_x, moment_of_inertia_y, moment_of_inertia_z );
   }
   catch( const std::exception& ex )
   {
@@ -378,7 +380,7 @@ void ed_fm_set_current_state( double ax, double ay, double az, double vx, double
 {
   try
   {
-    s_efmProxy->set_current_state( ax, ay, az, vx, vy, vz, px, py, pz, omegadotx, omegadoty, omegadotz, omegax, omegay, omegaz, quaternion_x, quaternion_y, quaternion_z, quaternion_w );
+    Proxy::s_theEFMProxy->set_current_state( ax, ay, az, vx, vy, vz, px, py, pz, omegadotx, omegadoty, omegadotz, omegax, omegay, omegaz, quaternion_x, quaternion_y, quaternion_z, quaternion_w );
   }
   catch( const std::exception& ex )
   {
@@ -397,7 +399,7 @@ void ed_fm_set_current_state_body_axis( double ax, double ay, double az, double 
 {
   try
   {
-    s_efmProxy->set_current_state_body_axis( ax, ay, az, vx, vy, vz, wind_vx, wind_vy, wind_vz, omegadotx, omegadoty, omegadotz, omegax, omegay, omegaz, yaw, pitch, roll, common_angle_of_attack, common_angle_of_slide );
+    Proxy::s_theEFMProxy->set_current_state_body_axis( ax, ay, az, vx, vy, vz, wind_vx, wind_vy, wind_vz, omegadotx, omegadoty, omegadotz, omegax, omegay, omegaz, yaw, pitch, roll, common_angle_of_attack, common_angle_of_slide );
   }
   catch( const std::exception& ex )
   {
@@ -414,7 +416,7 @@ void ed_fm_set_command( int command, float value )
 {
   try
   {
-    s_efmProxy->set_command( command, value );
+    Proxy::s_theEFMProxy->set_command( command, value );
   }
   catch( const std::exception& ex )
   {
@@ -431,7 +433,7 @@ bool ed_fm_change_mass( double& delta_mass, double& delta_mass_pos_x, double& de
 {
   try
   {
-    bool ret =s_efmProxy->change_mass( delta_mass, delta_mass_pos_x, delta_mass_pos_y, delta_mass_pos_z, delta_mass_moment_of_inertia_x, delta_mass_moment_of_inertia_y, delta_mass_moment_of_inertia_z );
+    bool ret =Proxy::s_theEFMProxy->change_mass( delta_mass, delta_mass_pos_x, delta_mass_pos_y, delta_mass_pos_z, delta_mass_moment_of_inertia_x, delta_mass_moment_of_inertia_y, delta_mass_moment_of_inertia_z );
     return ret;
   }
   catch( const std::exception& ex )
@@ -449,7 +451,7 @@ void ed_fm_set_internal_fuel( double fuel )
 {
   try
   {
-    s_efmProxy->set_internal_fuel( fuel );
+    Proxy::s_theEFMProxy->set_internal_fuel( fuel );
   }
   catch( const std::exception& ex )
   {
@@ -466,7 +468,7 @@ double ed_fm_get_internal_fuel()
 {
   try
   {
-    double ret = s_efmProxy->get_internal_fuel();
+    double ret = Proxy::s_theEFMProxy->get_internal_fuel();
 
     return ret;
   }
@@ -486,7 +488,7 @@ void ed_fm_set_external_fuel( int station, double fuel, double x, double y, doub
 {
   try
   {
-    s_efmProxy->set_external_fuel( station, fuel, x, y, z );
+    Proxy::s_theEFMProxy->set_external_fuel( station, fuel, x, y, z );
   }
   catch( const std::exception& ex )
   {
@@ -503,7 +505,7 @@ double ed_fm_get_external_fuel()
 {
   try
   {
-    double ret = s_efmProxy->get_external_fuel();
+    double ret = Proxy::s_theEFMProxy->get_external_fuel();
 
     return ret;
   }
@@ -523,7 +525,7 @@ void ed_fm_refueling_add_fuel( double fuel )
 {
   try
   {
-    s_efmProxy->refueling_add_fuel( fuel );
+    Proxy::s_theEFMProxy->refueling_add_fuel( fuel );
   }
   catch( const std::exception& ex )
   {
@@ -540,7 +542,7 @@ void ed_fm_set_draw_args_v2( float * array, size_t size )
 {
   try
   {
-    s_efmProxy->set_draw_args_v2( array, size );
+    Proxy::s_theEFMProxy->set_draw_args_v2( array, size );
   }
   catch( const std::exception& ex )
   {
@@ -557,7 +559,7 @@ void ed_fm_set_fc3_cockpit_draw_args_v2( float * array, size_t size )
 {
   try
   {
-    s_efmProxy->set_fc3_cockpit_draw_args_v2( array, size );
+    Proxy::s_theEFMProxy->set_fc3_cockpit_draw_args_v2( array, size );
   }
   catch( const std::exception& ex )
   {
@@ -575,7 +577,7 @@ void ed_fm_set_draw_args( EdDrawArgument* array, size_t size )
 {
   try
   {
-    s_efmProxy->set_draw_args( array, size );
+    Proxy::s_theEFMProxy->set_draw_args( array, size );
   }
   catch( const std::exception& ex )
   {
@@ -592,7 +594,7 @@ void ed_fm_set_fc3_cockpit_draw_args( EdDrawArgument* array, size_t size )
 {
   try
   {
-    s_efmProxy->set_fc3_cockpit_draw_args( array, size );
+    Proxy::s_theEFMProxy->set_fc3_cockpit_draw_args( array, size );
   }
   catch( const std::exception& ex )
   {
@@ -609,7 +611,7 @@ double ed_fm_get_shake_amplitude()
 {
   try
   {
-    double ret = s_efmProxy->get_shake_amplitude();
+    double ret = Proxy::s_theEFMProxy->get_shake_amplitude();
     return ret;
   }
   catch( const std::exception& ex )
@@ -627,7 +629,7 @@ void ed_fm_configure( const char* cfg_path )
 {
   try
   {
-    s_efmProxy->configure( cfg_path );
+    Proxy::s_theEFMProxy->configure( cfg_path );
   }
   catch( const std::exception& ex )
   {
@@ -643,7 +645,7 @@ double ed_fm_get_param( unsigned param_enum )
 {
   try
   {
-    double ret = s_efmProxy->get_param( param_enum );
+    double ret = Proxy::s_theEFMProxy->get_param( param_enum );
 
     return ret;
   }
@@ -663,7 +665,7 @@ bool ed_fm_make_balance( double& ax, double& ay, double& az, double& vx, double&
 {
   try
   {
-    bool ret = s_efmProxy->make_balance( ax, ay, az, vx, vy, vz, omegadotx, omegadoty, omegadotz, omegax, omegay, omegaz, yaw, pitch, roll );
+    bool ret = Proxy::s_theEFMProxy->make_balance( ax, ay, az, vx, vy, vz, omegadotx, omegadoty, omegadotz, omegax, omegay, omegaz, yaw, pitch, roll );
     return ret;
   }
   catch( const std::exception& ex )
@@ -682,7 +684,7 @@ bool ed_fm_enable_debug_info()
 {
   try
   {
-    bool ret = s_efmProxy->enable_debug_info();
+    bool ret = Proxy::s_theEFMProxy->enable_debug_info();
 
     return ret;
   }
@@ -702,7 +704,7 @@ size_t ed_fm_debug_watch( int level, char* buffer, size_t maxlen )
 {
   try
   {
-    size_t ret = s_efmProxy->debug_watch( level, buffer, maxlen );
+    size_t ret = Proxy::s_theEFMProxy->debug_watch( level, buffer, maxlen );
 
     return ret;
   }
@@ -722,7 +724,7 @@ void ed_fm_on_planned_failure( const char* name )
 {
   try
   {
-    s_efmProxy->on_planned_failure( name );
+    Proxy::s_theEFMProxy->on_planned_failure( name );
   }
   catch( const std::exception& ex )
   {
@@ -739,7 +741,7 @@ void ed_fm_on_damage( int element, double element_integrity_factor )
 {
   try
   {
-    s_efmProxy->on_damage( element, element_integrity_factor );
+    Proxy::s_theEFMProxy->on_damage( element, element_integrity_factor );
   }
   catch( const std::exception& ex )
   {
@@ -756,7 +758,7 @@ void ed_fm_repair()
 {
   try
   {
-    s_efmProxy->repair();
+    Proxy::s_theEFMProxy->repair();
   }
   catch( const std::exception& ex )
   {
@@ -773,7 +775,7 @@ bool ed_fm_need_to_be_repaired()
 {
   try
   {
-    bool ret = s_efmProxy->need_to_be_repaired();
+    bool ret = Proxy::s_theEFMProxy->need_to_be_repaired();
     return ret;
   }
   catch( const std::exception& ex )
@@ -792,7 +794,7 @@ void ed_fm_set_immortal( bool value )
 {
   try
   {
-    s_efmProxy->set_immortal( value );
+    Proxy::s_theEFMProxy->set_immortal( value );
   }
   catch( const std::exception& ex )
   {
@@ -809,7 +811,7 @@ void ed_fm_unlimited_fuel( bool value )
 {
   try
   {
-    s_efmProxy->unlimited_fuel( value );
+    Proxy::s_theEFMProxy->unlimited_fuel( value );
   }
   catch( const std::exception& ex )
   {
@@ -826,7 +828,7 @@ void ed_fm_set_easy_flight( bool value )
 {
   try
   {
-    s_efmProxy->set_easy_flight( value );
+    Proxy::s_theEFMProxy->set_easy_flight( value );
   }
   catch( const std::exception& ex )
   {
@@ -842,7 +844,7 @@ void ed_fm_set_property_numeric( const char* property_name, float value )
 {
   try
   {
-    s_efmProxy->set_property_numeric( property_name, value );
+    Proxy::s_theEFMProxy->set_property_numeric( property_name, value );
   }
   catch( const std::exception& ex )
   {
@@ -858,7 +860,7 @@ void ed_fm_set_property_string( const char* property_name, const char* value )
 {
   try
   {
-    s_efmProxy->set_property_string( property_name, value );
+    Proxy::s_theEFMProxy->set_property_string( property_name, value );
   }
   catch( const std::exception& ex )
   {
@@ -874,7 +876,7 @@ bool ed_fm_pop_simulation_event( ed_fm_simulation_event& out )
 {
   try
   {
-    bool ret = s_efmProxy->pop_simulation_event( out );
+    bool ret = Proxy::s_theEFMProxy->pop_simulation_event( out );
     return ret;
   }
   catch( const std::exception& ex )
@@ -892,7 +894,7 @@ bool ed_fm_push_simulation_event( const ed_fm_simulation_event& in )
 {
   try
   {
-    bool ret =s_efmProxy->push_simulation_event( in );
+    bool ret =Proxy::s_theEFMProxy->push_simulation_event( in );
     return ret;
   }
   catch( const std::exception& ex )
@@ -910,7 +912,7 @@ void ed_fm_suspension_feedback( int idx, const ed_fm_suspension_info* info )
 {
   try
   {
-    s_efmProxy->suspension_feedback( idx, info );
+    Proxy::s_theEFMProxy->suspension_feedback( idx, info );
   }
   catch( const std::exception& ex )
   {
@@ -926,7 +928,7 @@ bool ed_fm_LERX_vortex_update( unsigned idx, LERX_vortex& out )
 {
   try
   {
-    bool ret = s_efmProxy->LERX_vortex_update( idx, out );
+    bool ret = Proxy::s_theEFMProxy->LERX_vortex_update( idx, out );
     return ret;
   }
   catch( const std::exception& ex )

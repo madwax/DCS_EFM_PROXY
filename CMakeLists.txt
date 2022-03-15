@@ -36,6 +36,9 @@ target_include_directories( efm_proxy PUBLIC
 target_sources( efm_proxy PRIVATE 
 	${INC}/common.h
 	${INC}/os.h
+	${INC}/config.h
+	${SRC}/config.cpp
+	${INC}/log.h
 	${SRC}/log.cpp
 	${INC}/loader.h
 	${SRC}/loader.cpp
@@ -43,7 +46,6 @@ target_sources( efm_proxy PRIVATE
 	${SRC}/efm.cpp
 	${INC}/proxy.h
 	${SRC}/proxy.cpp
-
 	${SRC}/dllmain.cpp
 )
 

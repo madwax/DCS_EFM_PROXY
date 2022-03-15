@@ -4,47 +4,57 @@
 // 
 // 
 #include "loader.h"
+#include "log.h"
+
+namespace 
+{
+std::filesystem::path GetModuleFilepath( HMODULE hModule )
+{
+  constexpr DWORD MaxBuffSize = 1024;
+
+  wchar_t tmpBuff[ MaxBuffSize ] = {};
+
+  ::GetModuleFileNameW( hModule, tmpBuff, MaxBuffSize );
+
+  return std::filesystem::path( tmpBuff );
+}
+
+}
 
 namespace Proxy
 {
 
-HMODULE Loader::s_hModule = nullptr;
-std::filesystem::path Loader::s_moduleFilepath;
 
-void Loader::Set( HMODULE hModule )
-{
-  Loader::s_hModule = hModule;
-
-  constexpr DWORD MaxBuffSize = 1024;
-
-  char tmpBuff[ MaxBuffSize ] = {};
-
-  ::GetModuleFileNameA( Loader::s_hModule, tmpBuff, MaxBuffSize );
-
-  Loader::s_moduleFilepath = std::filesystem::path( tmpBuff );
-}
-
-
-const std::filesystem::path& Loader::ModuleFilepath()
-{
-  return Loader::s_moduleFilepath;
-}
-
-
-Loader::Loader()
+Loader::Loader( HMODULE hModule ) 
+  : m_hModule( hModule )
+  , m_moduleFilepath( GetModuleFilepath( hModule ) )
 {
 }
 
 
 Loader::~Loader()
 {
+  this->Unload();
+}
+
+
+const std::filesystem::path& Loader::ModuleFilepath() const
+{
+  return Loader::m_moduleFilepath;
 }
 
 
 bool Loader::Load( const std::filesystem::path& filepath )
 {
-  this->m_hDLL = ::LoadLibraryA( filepath.string().c_str() );
-  return ( this->m_hDLL != nullptr );
+  Proxy:ToLog( "Loading the file : %s", filepath.string().c_str() );
+
+  this->m_hDLL = ::LoadLibraryW( filepath.wstring().c_str() );
+  if( this->m_hDLL == nullptr )
+  {
+    Proxy::ToLog( "Failed to Load : %s", filepath.string().c_str() );
+    return false;
+  }
+  return true;
 }
 
 

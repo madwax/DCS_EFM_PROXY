@@ -6,7 +6,9 @@ namespace Proxy
 {
 
 
-EFM::EFM()
+EFM::EFM( Proxy::Loader& theLoader, Proxy::Config& theConfig )
+  : m_theLoader( theLoader )
+  , m_theConfig( theConfig )
 {
   Reset();
 }
@@ -15,13 +17,6 @@ EFM::EFM()
 EFM::~EFM()
 {
   Reset();
-}
-
-
-std::filesystem::path EFM::ConfigFilepath() const
-{
-  std::filesystem::path configFilepath = Loader::ModuleFilepath().parent_path() / std::filesystem::path("efm.proxy.ini");
-  return configFilepath;
 }
 
 
@@ -78,13 +73,14 @@ void EFM::Reset()
   this->m_push_simulation_event = nullptr;
   this->m_suspension_feedback = nullptr;
   this->m_LERX_vortex_update = nullptr;
+
+  // force an unload just incase
+  this->m_theLoader.Unload();
 }
 
 
 bool EFM::LoadExports()
 {
-  Reset();
-
   this->m_add_local_force = reinterpret_cast< PFN_FORCE_SOURCE >( this->m_theLoader.GetProc( "ed_fm_add_local_force" ) );
   this->m_add_global_force = reinterpret_cast< PFN_FORCE_SOURCE >( this->m_theLoader.GetProc( "ed_fm_add_global_force" ) );
   this->m_add_local_force_component = reinterpret_cast< PFN_FORCE_COMPONENT_SOURCE >( this->m_theLoader.GetProc( "ed_fm_add_local_force_component" ) );
@@ -159,53 +155,10 @@ bool EFM::Load( const std::filesystem::path& filepath )
 }
 
 
-std::filesystem::path EFM::TargetDLL()
-{
-  const std::filesystem::path configFilepath = this->ConfigFilepath();
-  //Proxy::ToLog( "Looking for config file : '%s'", configFilepath.string().c_str() );
-  // workout the default 
-  std::filesystem::path defaultDLL = Loader::ModuleFilepath().stem().string() + std::string( ".real.dll" );
-  //ToLog( "EFM Proxy : Default plugin to load : %s", defaultDLL.string().c_str() );
-
-  constexpr DWORD ValueBufferSize = 1024;
-  char valueBuffer[ ValueBufferSize ] = {};
-
-  const DWORD used = ::GetPrivateProfileStringA( "General"
-    , "target"
-    , defaultDLL.string().c_str()
-    , valueBuffer
-    , ValueBufferSize
-    , configFilepath.string().c_str()
-  );
-
-  std::filesystem::path target;
-
-  if( used == 0 )
-  {
-    ToLog( "EFM Proxy : Failed to read from config file, using default TargetDLL" );
-    target = defaultDLL;
-  }
-  else
-  {
-    target = valueBuffer;
-  }
-
-  // The user might want the dll anywere they want
-  if( target.is_absolute() )
-  {
-    return target;
-  }
-
-  // it's relative
-  std::filesystem::path result = std::filesystem::canonical( Loader::ModuleFilepath().parent_path() / target );
-  return result;
-}
-
-
 bool EFM::Load()
 {
   // If we have a config defined then read the target in it else use the default which is proxyname.real.dll
-  std::filesystem::path targetDllFilepath = this->TargetDLL();
+  std::filesystem::path targetDllFilepath = this->m_theConfig.TargetDLL();
   return this->Load( targetDllFilepath );
 }
 

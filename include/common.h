@@ -6,14 +6,19 @@
 #ifndef __EFM_PROXY_COMMON_H__
 #define __EFM_PROXY_COMMON_H__
 
-#include "os.h"
+#include "config.h"
+#include "log.h"
+#include "loader.h"
+#include "efm.h"
+#include "proxy.h"
 
 namespace Proxy
 {
 
-/// Used for debugging!
-/// This goes to OutputDebugStringA()
-void ToLog( const char* message, ... );
+extern std::unique_ptr< Config > s_theConfig;
+extern std::unique_ptr< Log > s_theLogger;
+extern std::unique_ptr< Loader > s_theLoader;
+extern std::unique_ptr< EFM > s_theEFMProxy;
 
 }
 
