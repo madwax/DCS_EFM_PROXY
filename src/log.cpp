@@ -107,7 +107,6 @@ void Log::ConfigureConsole()
 
         if( stdOut )
         {
-          ::OutputDebugStringA( "==== stdout" );
           this->m_hConsoleStdOutRedirect = freopen("CONOUT$", "w", stdout);
         }
         if( stdErr )
